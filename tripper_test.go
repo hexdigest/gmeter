@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
@@ -36,8 +37,7 @@ func Test_nopTripper_RoundTrip(t *testing.T) {
 			name: "failed to dump request",
 			init: func(*testing.T) nopTripper { return nopTripper{} },
 			args: func(*testing.T) args {
-				r, _ := http.NewRequest("POST", "http://github.com/hexdigest/gmeter", errorReader{})
-				return args{r}
+				return args{r: httptest.NewRequest("POST", "http://github.com/hexdigest/gmeter", errorReader{})}
 			},
 			wantErr: true,
 			inspectErr: func(err error, t *testing.T) {
@@ -50,8 +50,7 @@ func Test_nopTripper_RoundTrip(t *testing.T) {
 			name: "track not found",
 			init: func(*testing.T) nopTripper { return nopTripper{} },
 			args: func(*testing.T) args {
-				r, _ := http.NewRequest("POST", "http://github.com/hexdigest/gmeter", strings.NewReader(""))
-				return args{r}
+				return args{r: httptest.NewRequest("POST", "http://github.com/hexdigest/gmeter", strings.NewReader(""))}
 			},
 			wantErr: true,
 			inspectErr: func(err error, t *testing.T) {
@@ -123,9 +122,8 @@ func Test_RoundTripper_Record(t *testing.T) {
 				return &RoundTripper{logger: log.New(ioutil.Discard, "", 0)}
 			},
 			args: func(t *testing.T) args {
-				r, _ := http.NewRequest("POST", "https://github.com/hexdigest/gmeter", strings.NewReader("{"))
 				return args{
-					r: r,
+					r: httptest.NewRequest("POST", "https://github.com/hexdigest/gmeter", strings.NewReader("{")),
 					w: newCheckStatusWriter(t, 400),
 				}
 			},
@@ -137,8 +135,7 @@ func Test_RoundTripper_Record(t *testing.T) {
 			},
 			args: func(t *testing.T) args {
 				body := strings.NewReader(`{"cassette": "nice music"}`)
-				r, _ := http.NewRequest("POST", "https://github.com/hexdigest/gmeter", body)
-				return args{r: r}
+				return args{r: httptest.NewRequest("POST", "https://github.com/hexdigest/gmeter", body)}
 			},
 		},
 	}
@@ -261,6 +258,93 @@ func Test_RoundTripper_Play(t *testing.T) {
 
 			if tt.inspect != nil {
 				tt.inspect(receiver, t)
+			}
+		})
+	}
+}
+
+func TestNewRoundTripper(t *testing.T) {
+	expected := RoundTripper{}
+	rt := NewRoundTripper(Options{}, nil)
+	if *rt != expected {
+		t.Errorf("expected pointer to empty RoundTripper, got: %v", *rt)
+	}
+}
+
+type roundTripperMock struct {
+	resp *http.Response
+	err  error
+}
+
+func (rt roundTripperMock) RoundTrip(*http.Request) (*http.Response, error) {
+	return rt.resp, rt.err
+}
+
+func TestRoundTripper_RoundTrip(t *testing.T) {
+	type args struct {
+		r *http.Request
+	}
+	tests := []struct {
+		name    string
+		init    func(t *testing.T) *RoundTripper
+		inspect func(r *RoundTripper, t *testing.T) //inspects receiver after test run
+
+		args func(t *testing.T) args
+
+		want1      *http.Response
+		wantErr    bool
+		inspectErr func(err error, t *testing.T) //use for more precise error evaluation after test
+	}{
+		{
+			name: "not initialized",
+			init: func(t *testing.T) *RoundTripper { return &RoundTripper{} },
+			args: func(t *testing.T) args {
+				return args{r: httptest.NewRequest("POST", "http://github.com/hexdigest/gmeter", strings.NewReader(""))}
+			},
+			wantErr: true,
+			inspectErr: func(err error, t *testing.T) {
+				if err != errNotInitialized {
+					t.Errorf("unexpected error: %v", err)
+				}
+			},
+		},
+		{
+			name: "success",
+			init: func(t *testing.T) *RoundTripper {
+				rtMock := roundTripperMock{resp: &http.Response{StatusCode: http.StatusTeapot}, err: nil}
+				return &RoundTripper{
+					RoundTripper: rtMock,
+					logger:       log.New(ioutil.Discard, "", 0),
+				}
+			},
+			args: func(t *testing.T) args {
+				return args{r: httptest.NewRequest("POST", "http://github.com/hexdigest/gmeter", strings.NewReader(""))}
+			},
+			want1: &http.Response{StatusCode: http.StatusTeapot},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tArgs := tt.args(t)
+
+			receiver := tt.init(t)
+			got1, err := receiver.RoundTrip(tArgs.r)
+
+			if tt.inspect != nil {
+				tt.inspect(receiver, t)
+			}
+
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("RoundTripper.RoundTrip got1 = %v, want1: %v", got1, tt.want1)
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("RoundTripper.RoundTrip error = %v, wantErr: %t", err, tt.wantErr)
+			}
+
+			if tt.inspectErr != nil {
+				tt.inspectErr(err, t)
 			}
 		})
 	}

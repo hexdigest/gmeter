@@ -36,10 +36,25 @@ func TestGetOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid target",
+			name: "no target",
 			args: func(t *testing.T) args {
 				return args{
 					arguments: []string{""},
+					stderr:    ioutil.Discard,
+					exit: func(code int) {
+						if code != 2 {
+							t.Errorf("unexpected exit code, got: %d, want: 2", code)
+						}
+						t.Skip()
+					},
+				}
+			},
+		},
+		{
+			name: "bad target",
+			args: func(t *testing.T) args {
+				return args{
+					arguments: []string{"-t", "!"},
 					stderr:    ioutil.Discard,
 					exit: func(code int) {
 						if code != 2 {
