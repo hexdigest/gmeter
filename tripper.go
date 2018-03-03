@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -70,10 +71,10 @@ func (rt *RoundTripper) Record(w http.ResponseWriter, r *http.Request) {
 	rt.lock.Lock()
 	defer rt.lock.Unlock()
 
-	req := request{}
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		rt.logger.Printf("failed to decode record request: %v", err)
+	req, err := decodeRequest(r.Body)
+	if err != nil {
+		rt.logger.Printf("record failed: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -98,10 +99,10 @@ func (rt *RoundTripper) Play(w http.ResponseWriter, r *http.Request) {
 	rt.lock.Lock()
 	defer rt.lock.Unlock()
 
-	req := request{}
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&req); err != nil {
-		rt.logger.Printf("failed to decode play request: %v", err)
+	req, err := decodeRequest(r.Body)
+	if err != nil {
+		rt.logger.Printf("play failed: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -115,4 +116,20 @@ func (rt *RoundTripper) Play(w http.ResponseWriter, r *http.Request) {
 
 	rt.RoundTripper = govcr.NewVCR(req.Cassette, &config).Client.Transport
 	rt.logger.Printf("started playing the cassette: %s", req.Cassette)
+}
+
+var errEmptyCassette = errors.New("empty cassette name")
+
+func decodeRequest(r io.Reader) (*request, error) {
+	var req request
+	decoder := json.NewDecoder(r)
+	if err := decoder.Decode(&req); err != nil {
+		return nil, fmt.Errorf("failed to decode request: %v", err)
+	}
+
+	if req.Cassette == "" {
+		return nil, errEmptyCassette
+	}
+
+	return &req, nil
 }
