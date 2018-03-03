@@ -54,7 +54,7 @@ func TestGetOptions(t *testing.T) {
 			name: "bad target",
 			args: func(t *testing.T) args {
 				return args{
-					arguments: []string{"-t", "!"},
+					arguments: []string{"-t", "::"},
 					stderr:    ioutil.Discard,
 					exit: func(code int) {
 						if code != 2 {

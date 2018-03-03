@@ -48,7 +48,7 @@ func GetOptions(arguments []string, stdout, stderr io.Writer, exit exitFunc) Opt
 		errors = append(errors, fmt.Sprintf("failed to parse target URL: %v", err))
 	}
 
-	if targetURL.Scheme != "http" && targetURL.Scheme != "https" {
+	if targetURL != nil && targetURL.Scheme != "http" && targetURL.Scheme != "https" {
 		errors = append(errors, fmt.Sprintf("unsupported scheme: %q", targetURL.Scheme))
 	}
 
