@@ -6,8 +6,6 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetOptions(t *testing.T) {
@@ -29,7 +27,9 @@ func TestGetOptions(t *testing.T) {
 				return args{
 					arguments: []string{"-h"},
 					exit: func(code int) {
-						assert.Equal(t, 0, code)
+						if code != 0 {
+							t.Errorf("got non-zero exit code: %d", code)
+						}
 						t.Skip()
 					},
 				}
@@ -42,7 +42,9 @@ func TestGetOptions(t *testing.T) {
 					arguments: []string{""},
 					stderr:    ioutil.Discard,
 					exit: func(code int) {
-						assert.Equal(t, 2, code)
+						if code != 2 {
+							t.Errorf("unexpected exit code, got: %d, want: 2", code)
+						}
 						t.Skip()
 					},
 				}
