@@ -9,5 +9,5 @@ before_install:
 script:
   - go test -race ./...
   - go test -c -covermode=count -coverpkg=github.com/hexdigest/gmeter
-  - ./gounit.test -test.coverprofile coverage.cov
+  - ./gmeter.test -test.coverprofile coverage.cov
   - $HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage.cov
