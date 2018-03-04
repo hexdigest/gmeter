@@ -11,11 +11,11 @@ go get github.com/hexdigest/gounit/cmd/gounit
 
 Alternatively you can download one of the pre-built executables:
 
-[gmeter-windows-i386-v1.0.zip](https://github.com/hexdigest/gmeter/files/1778923/gmeter-windows-i386-v1.0.zip)
-[gmeter-windows-amd64-v1.0.zip](https://github.com/hexdigest/gmeter/files/1778924/gmeter-windows-amd64-v1.0.zip)
-[gmeter-linux-i386-v1.0.gz](https://github.com/hexdigest/gmeter/files/1778925/gmeter-linux-i386-v1.0.gz)
-[gmeter-linux-amd64-v1.0.gz](https://github.com/hexdigest/gmeter/files/1778926/gmeter-linux-amd64-v1.0.gz)
-[gmeter-darwin-amd64-v1.0.zip](https://github.com/hexdigest/gmeter/files/1778927/gmeter-darwin-amd64-v1.0.zip)
+* [gmeter-windows-i386-v1.0.zip](https://github.com/hexdigest/gmeter/files/1778923/gmeter-windows-i386-v1.0.zip)  
+* [gmeter-windows-amd64-v1.0.zip](https://github.com/hexdigest/gmeter/files/1778924/gmeter-windows-amd64-v1.0.zip)
+* [gmeter-linux-i386-v1.0.gz](https://github.com/hexdigest/gmeter/files/1778925/gmeter-linux-i386-v1.0.gz)
+* [gmeter-linux-amd64-v1.0.gz](https://github.com/hexdigest/gmeter/files/1778926/gmeter-linux-amd64-v1.0.gz)
+* [gmeter-darwin-amd64-v1.0.zip](https://github.com/hexdigest/gmeter/files/1778927/gmeter-darwin-amd64-v1.0.zip)
 
 ## Usage
 
