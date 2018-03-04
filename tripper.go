@@ -35,7 +35,8 @@ type (
 	nopTripper struct{}
 )
 
-//RoundTrip implements http.RoundTripper
+//RoundTrip implements http.RoundTripper that always returns an error
+//it's used in Play mode so that responses can only be replayed but not recorded
 func (nt nopTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	b, err := httputil.DumpRequest(r, true)
 	if err != nil {
