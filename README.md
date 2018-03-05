@@ -6,7 +6,7 @@ GMeter can be used for testing programs that make HTTP requests to third-party s
 ## Installation
 
 ```
-go get github.com/hexdigest/gounit/cmd/gounit
+go get github.com/hexdigest/gmeter/cmd/gmeter
 ```
 
 Alternatively you can download one of the pre-built executables:
